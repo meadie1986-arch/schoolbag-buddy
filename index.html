@@ -83,20 +83,32 @@
       const [activeTab, setActiveTab] = useState('pack');
       const [selectedWeek, setSelectedWeek] = useState('Week 1');
       const [selectedDay, setSelectedDay] = useState('Monday');
-     
+      
       const [timetable, setTimetable] = useState(() => {
-        const saved = localStorage.getItem('schoolbag_timetable_v2');
-        return saved ? JSON.parse(saved) : { 'Week 1': BASE_TIMETABLE, 'Week 2': BASE_TIMETABLE };
+        try {
+          const saved = localStorage.getItem('schoolbag_timetable_v2');
+          return saved ? JSON.parse(saved) : { 'Week 1': BASE_TIMETABLE, 'Week 2': BASE_TIMETABLE };
+        } catch(e) {
+          return { 'Week 1': BASE_TIMETABLE, 'Week 2': BASE_TIMETABLE };
+        }
       });
 
       const [equipmentRules, setEquipmentRules] = useState(() => {
-        const saved = localStorage.getItem('schoolbag_rules');
-        return saved ? JSON.parse(saved) : DEFAULT_EQUIPMENT_RULES;
+        try {
+          const saved = localStorage.getItem('schoolbag_rules');
+          return saved ? JSON.parse(saved) : DEFAULT_EQUIPMENT_RULES;
+        } catch(e) {
+          return DEFAULT_EQUIPMENT_RULES;
+        }
       });
 
       const [essentials, setEssentials] = useState(() => {
-        const saved = localStorage.getItem('schoolbag_essentials');
-        return saved ? JSON.parse(saved) : DEFAULT_ESSENTIALS;
+        try {
+          const saved = localStorage.getItem('schoolbag_essentials');
+          return saved ? JSON.parse(saved) : DEFAULT_ESSENTIALS;
+        } catch(e) {
+          return DEFAULT_ESSENTIALS;
+        }
       });
 
       const [checkedItems, setCheckedItems] = useState({});
@@ -119,7 +131,7 @@
       }, [essentials]);
 
       const getRequiredItemsForDay = (week, day) => {
-        const classes = timetable[week]?.[day] || [];
+        const classes = (timetable && timetable[week] && timetable[week][day]) ? timetable[week][day] : [];
         const itemsSet = new Set([...essentials]);
         classes.forEach(cls => {
           const gear = equipmentRules[cls.name] || [];
@@ -150,7 +162,7 @@
           ...prev,
           [selectedWeek]: {
             ...prev[selectedWeek],
-            [selectedDay]: [...(prev[selectedWeek][selectedDay] || []), newClassObj]
+            [selectedDay]: [...(prev[selectedWeek]?.[selectedDay] || []), newClassObj]
           }
         }));
         setNewClassName('');
@@ -164,7 +176,7 @@
           ...prev,
           [selectedWeek]: {
             ...prev[selectedWeek],
-            [selectedDay]: prev[selectedWeek][selectedDay].filter(c => c.id !== id)
+            [selectedDay]: (prev[selectedWeek]?.[selectedDay] || []).filter(c => c.id !== id)
           }
         }));
       };
@@ -183,7 +195,7 @@
       return (
         <div className="min-h-screen bg-slate-100 flex justify-center items-stretch p-0 sm:p-6">
           <div className="w-full max-w-md bg-white min-h-screen sm:min-h-[850px] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 relative">
-           
+            
             {/* Header */}
             <header className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-6 pb-4 shadow-md shrink-0">
               <div className="flex justify-between items-center mb-3">
@@ -301,10 +313,10 @@
                     </form>
                   )}
                   <div className="space-y-3">
-                    {timetable[selectedWeek]?[selectedDay]?.length === 0 ? (
+                    {(!timetable?.[selectedWeek]?.[selectedDay] || timetable[selectedWeek][selectedDay].length === 0) ? (
                       <p className="text-center text-slate-400 py-8 text-sm">No classes added for {selectedWeek} {selectedDay} yet.</p>
                     ) : (
-                      timetable[selectedWeek]?.[selectedDay]?.map((cls, idx) => (
+                      timetable[selectedWeek][selectedDay].map((cls, idx) => (
                         <div key={cls.id || idx} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex justify-between items-center shadow-sm">
                           <div>
                             <div className="flex items-center space-x-2">
@@ -359,7 +371,8 @@
       );
     }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
 </html>

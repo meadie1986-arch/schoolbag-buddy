@@ -29,7 +29,7 @@
     const Trash = (props) => <IconWrapper {...props}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></IconWrapper>;
     const Sparkles = (props) => <IconWrapper {...props}><path d="m12 3-1.9 5.8a2 2 0 0 1-1.2 1.2L3 12l5.8 1.9a2 2 0 0 1 1.2 1.2L12 21l1.9-5.8a2 2 0 0 1 1.2-1.2L21 12l-5.8-1.9a2 2 0 0 1-1.2-1.2Z"/></IconWrapper>;
 
-    const DEFAULT_TIMETABLE = {
+    const BASE_TIMETABLE = {
       Monday: [
         { id: '1', name: 'Mathematics', room: 'Room 102', teacher: 'Mr. Davis' },
         { id: '2', name: 'English Literature', room: 'Room 204', teacher: 'Mrs. Smith' },
@@ -81,11 +81,12 @@
 
     function App() {
       const [activeTab, setActiveTab] = useState('pack');
+      const [selectedWeek, setSelectedWeek] = useState('Week 1');
       const [selectedDay, setSelectedDay] = useState('Monday');
-      
+     
       const [timetable, setTimetable] = useState(() => {
-        const saved = localStorage.getItem('schoolbag_timetable');
-        return saved ? JSON.parse(saved) : DEFAULT_TIMETABLE;
+        const saved = localStorage.getItem('schoolbag_timetable_v2');
+        return saved ? JSON.parse(saved) : { 'Week 1': BASE_TIMETABLE, 'Week 2': BASE_TIMETABLE };
       });
 
       const [equipmentRules, setEquipmentRules] = useState(() => {
@@ -106,7 +107,7 @@
       const [newClassTeacher, setNewClassTeacher] = useState('');
 
       useEffect(() => {
-        localStorage.setItem('schoolbag_timetable', JSON.stringify(timetable));
+        localStorage.setItem('schoolbag_timetable_v2', JSON.stringify(timetable));
       }, [timetable]);
 
       useEffect(() => {
@@ -117,8 +118,8 @@
         localStorage.setItem('schoolbag_essentials', JSON.stringify(essentials));
       }, [essentials]);
 
-      const getRequiredItemsForDay = (day) => {
-        const classes = timetable[day] || [];
+      const getRequiredItemsForDay = (week, day) => {
+        const classes = timetable[week]?.[day] || [];
         const itemsSet = new Set([...essentials]);
         classes.forEach(cls => {
           const gear = equipmentRules[cls.name] || [];
@@ -127,12 +128,12 @@
         return Array.from(itemsSet);
       };
 
-      const currentDayItems = getRequiredItemsForDay(selectedDay);
-      const packedCount = currentDayItems.filter(item => checkedItems[`${selectedDay}-${item}`]).length;
+      const currentDayItems = getRequiredItemsForDay(selectedWeek, selectedDay);
+      const packedCount = currentDayItems.filter(item => checkedItems[`${selectedWeek}-${selectedDay}-${item}`]).length;
       const allPacked = currentDayItems.length > 0 && packedCount === currentDayItems.length;
 
       const toggleItem = (item) => {
-        const key = `${selectedDay}-${item}`;
+        const key = `${selectedWeek}-${selectedDay}-${item}`;
         setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }));
       };
 
@@ -147,7 +148,10 @@
         };
         setTimetable(prev => ({
           ...prev,
-          [selectedDay]: [...(prev[selectedDay] || []), newClassObj]
+          [selectedWeek]: {
+            ...prev[selectedWeek],
+            [selectedDay]: [...(prev[selectedWeek][selectedDay] || []), newClassObj]
+          }
         }));
         setNewClassName('');
         setNewClassRoom('');
@@ -158,7 +162,10 @@
       const deleteClass = (id) => {
         setTimetable(prev => ({
           ...prev,
-          [selectedDay]: prev[selectedDay].filter(c => c.id !== id)
+          [selectedWeek]: {
+            ...prev[selectedWeek],
+            [selectedDay]: prev[selectedWeek][selectedDay].filter(c => c.id !== id)
+          }
         }));
       };
 
@@ -176,10 +183,10 @@
       return (
         <div className="min-h-screen bg-slate-100 flex justify-center items-stretch p-0 sm:p-6">
           <div className="w-full max-w-md bg-white min-h-screen sm:min-h-[850px] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 relative">
-            
+           
             {/* Header */}
-            <header className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-6 pb-5 shadow-md shrink-0">
-              <div className="flex justify-between items-center mb-4">
+            <header className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-6 pb-4 shadow-md shrink-0">
+              <div className="flex justify-between items-center mb-3">
                 <div>
                   <span className="text-xs uppercase tracking-wider bg-indigo-500/50 px-2.5 py-1 rounded-full font-semibold">Ready for School</span>
                   <h1 className="text-2xl font-black mt-1">SchoolBag Buddy</h1>
@@ -188,6 +195,23 @@
                   <Sparkles className="w-6 h-6 text-yellow-300 animate-pulse" />
                 </div>
               </div>
+
+              {/* Week 1 / Week 2 Toggle */}
+              <div className="flex space-x-1 bg-black/20 p-1 rounded-xl mb-3">
+                {['Week 1', 'Week 2'].map(week => (
+                  <button
+                    key={week}
+                    onClick={() => setSelectedWeek(week)}
+                    className={`flex-1 py-1.5 text-xs font-black rounded-lg transition-all ${
+                      selectedWeek === week ? 'bg-white text-indigo-700 shadow-md scale-102' : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    {week}
+                  </button>
+                ))}
+              </div>
+
+              {/* Day Selector */}
               <div className="flex space-x-1 bg-black/20 p-1 rounded-xl">
                 {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
                   <button
@@ -212,13 +236,13 @@
                       <div className="text-3xl">🎉</div>
                       <div>
                         <h3 className="font-bold text-base">Bag is 100% Packed!</h3>
-                        <p className="text-xs text-emerald-100">You are fully ready for {selectedDay}!</p>
+                        <p className="text-xs text-emerald-100">Fully ready for {selectedWeek} - {selectedDay}!</p>
                       </div>
                     </div>
                   )}
                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
                     <div className="flex justify-between text-sm font-semibold mb-2">
-                      <span className="text-slate-700">Packing Progress ({selectedDay})</span>
+                      <span className="text-slate-700">Progress ({selectedWeek} {selectedDay})</span>
                       <span className="text-indigo-600">{packedCount} / {currentDayItems.length} items</span>
                     </div>
                     <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
@@ -229,7 +253,7 @@
                     <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Items to Pack</h3>
                     <div className="space-y-2.5">
                       {currentDayItems.map(item => {
-                        const isChecked = !!checkedItems[`${selectedDay}-${item}`];
+                        const isChecked = !!checkedItems[`${selectedWeek}-${selectedDay}-${item}`];
                         return (
                           <div
                             key={item}
@@ -256,7 +280,7 @@
               {activeTab === 'timetable' && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{selectedDay} Schedule</h3>
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{selectedWeek} • {selectedDay}</h3>
                     <button onClick={() => setShowAddClass(true)} className="flex items-center space-x-1 bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md hover:bg-indigo-700 transition">
                       <Plus className="w-4 h-4" />
                       <span>Add Class</span>
@@ -264,7 +288,7 @@
                   </div>
                   {showAddClass && (
                     <form onSubmit={handleAddClass} className="bg-indigo-50/80 border border-indigo-200 p-4 rounded-2xl space-y-3 shadow-md">
-                      <h4 className="font-bold text-indigo-900 text-sm">Add New Class</h4>
+                      <h4 className="font-bold text-indigo-900 text-sm">Add Class to {selectedWeek} {selectedDay}</h4>
                       <input type="text" placeholder="Subject Name" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} className="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-600" required />
                       <div className="flex space-x-2">
                         <input type="text" placeholder="Room" value={newClassRoom} onChange={(e) => setNewClassRoom(e.target.value)} className="w-1/2 bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none" />
@@ -277,10 +301,10 @@
                     </form>
                   )}
                   <div className="space-y-3">
-                    {timetable[selectedDay]?.length === 0 ? (
-                      <p className="text-center text-slate-400 py-8 text-sm">No classes added for {selectedDay} yet.</p>
+                    {timetable[selectedWeek]?[selectedDay]?.length === 0 ? (
+                      <p className="text-center text-slate-400 py-8 text-sm">No classes added for {selectedWeek} {selectedDay} yet.</p>
                     ) : (
-                      timetable[selectedDay]?.map((cls, idx) => (
+                      timetable[selectedWeek]?.[selectedDay]?.map((cls, idx) => (
                         <div key={cls.id || idx} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex justify-between items-center shadow-sm">
                           <div>
                             <div className="flex items-center space-x-2">

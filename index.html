@@ -31,50 +31,35 @@
 
     const BASE_TIMETABLE = {
       Monday: [
-        { id: '1', name: 'Mathematics', room: 'Room 102', teacher: 'Mr. Davis' },
-        { id: '2', name: 'English Literature', room: 'Room 204', teacher: 'Mrs. Smith' },
-        { id: '3', name: 'Science', room: 'Lab 3', teacher: 'Dr. Evans' },
-        { id: '4', name: 'Physical Education', room: 'Gym', teacher: 'Coach Taylor' }
+        { id: '1', name: 'Mathematics', room: 'Room 102', teacher: 'Mr. Davis', items: ['Calculator', 'Geometry Set', 'Math Exercise Book'] },
+        { id: '2', name: 'English Literature', room: 'Room 204', teacher: 'Mrs. Smith', items: ['English Anthology', 'Reading Book'] },
+        { id: '3', name: 'Science', room: 'Lab 3', teacher: 'Dr. Evans', items: ['Science Lab Goggles', 'Scientific Calculator'] },
+        { id: '4', name: 'Physical Education', room: 'Gym', teacher: 'Coach Taylor', items: ['PE Kit', 'Trainers', 'Water Bottle'] }
       ],
       Tuesday: [
-        { id: '5', name: 'History', room: 'Room 110', teacher: 'Ms. Clark' },
-        { id: '6', name: 'Geography', room: 'Room 112', teacher: 'Mr. Brown' },
-        { id: '7', name: 'Art', room: 'Art Studio', teacher: 'Mrs. White' },
-        { id: '8', name: 'Mathematics', room: 'Room 102', teacher: 'Mr. Davis' }
+        { id: '5', name: 'History', room: 'Room 110', teacher: 'Ms. Clark', items: ['History Source Booklet'] },
+        { id: '6', name: 'Geography', room: 'Room 112', teacher: 'Mr. Brown', items: ['Atlas & Colored Pencils'] },
+        { id: '7', name: 'Art', room: 'Art Studio', teacher: 'Mrs. White', items: ['Sketchbook', 'Paint Apron'] },
+        { id: '8', name: 'Mathematics', room: 'Room 102', teacher: 'Mr. Davis', items: ['Calculator', 'Geometry Set'] }
       ],
       Wednesday: [
-        { id: '9', name: 'Science', room: 'Lab 3', teacher: 'Dr. Evans' },
-        { id: '10', name: 'Computer Science', room: 'IT Suite', teacher: 'Mr. Jones' },
-        { id: '11', name: 'English Literature', room: 'Room 204', teacher: 'Mrs. Smith' },
-        { id: '12', name: 'Music', room: 'Music Hall', teacher: 'Mr. Green' }
+        { id: '9', name: 'Science', room: 'Lab 3', teacher: 'Dr. Evans', items: ['Science Lab Goggles'] },
+        { id: '10', name: 'Computer Science', room: 'IT Suite', teacher: 'Mr. Jones', items: ['Headphones'] },
+        { id: '11', name: 'English Literature', room: 'Room 204', teacher: 'Mrs. Smith', items: ['Reading Book'] },
+        { id: '12', name: 'Music', room: 'Music Hall', teacher: 'Mr. Green', items: ['Sheet Music Folder'] }
       ],
       Thursday: [
-        { id: '13', name: 'Mathematics', room: 'Room 102', teacher: 'Mr. Davis' },
-        { id: '14', name: 'French', room: 'Room 301', teacher: 'Madame Dubois' },
-        { id: '15', name: 'Physical Education', room: 'Gym', teacher: 'Coach Taylor' },
-        { id: '16', name: 'History', room: 'Room 110', teacher: 'Ms. Clark' }
+        { id: '13', name: 'Mathematics', room: 'Room 102', teacher: 'Mr. Davis', items: ['Calculator'] },
+        { id: '14', name: 'French', room: 'Room 301', teacher: 'Madame Dubois', items: ['French Vocabulary Booklet'] },
+        { id: '15', name: 'Physical Education', room: 'Gym', teacher: 'Coach Taylor', items: ['PE Kit', 'Trainers'] },
+        { id: '16', name: 'History', room: 'Room 110', teacher: 'Ms. Clark', items: ['History Source Booklet'] }
       ],
       Friday: [
-        { id: '17', name: 'English Literature', room: 'Room 204', teacher: 'Mrs. Smith' },
-        { id: '18', name: 'Science', room: 'Lab 3', teacher: 'Dr. Evans' },
-        { id: '19', name: 'Design & Tech', room: 'Workshop', teacher: 'Mr. Wright' },
-        { id: '20', name: 'Drama', room: 'Studio', teacher: 'Ms. Lee' }
+        { id: '17', name: 'English Literature', room: 'Room 204', teacher: 'Mrs. Smith', items: ['Reading Book'] },
+        { id: '18', name: 'Science', room: 'Lab 3', teacher: 'Dr. Evans', items: ['Science Lab Goggles'] },
+        { id: '19', name: 'Design & Tech', room: 'Workshop', teacher: 'Mr. Wright', items: ['Safety Glasses'] },
+        { id: '20', name: 'Drama', room: 'Studio', teacher: 'Ms. Lee', items: ['Comfortable Clothes'] }
       ]
-    };
-
-    const DEFAULT_EQUIPMENT_RULES = {
-      'Mathematics': ['Calculator', 'Geometry Set', 'Math Exercise Book'],
-      'English Literature': ['English Anthology', 'Reading Book'],
-      'Science': ['Science Lab Goggles', 'Scientific Calculator'],
-      'Physical Education': ['PE Kit', 'Trainers', 'Water Bottle'],
-      'Art': ['Sketchbook', 'Paint Apron'],
-      'Computer Science': ['Headphones'],
-      'Music': ['Sheet Music Folder'],
-      'French': ['French Vocabulary Booklet'],
-      'History': ['History Source Booklet'],
-      'Geography': ['Atlas & Colored Pencils'],
-      'Design & Tech': ['Safety Glasses'],
-      'Drama': ['Comfortable Clothes']
     };
 
     const DEFAULT_ESSENTIALS = ['Water Bottle', 'Lunchbox', 'Pencil Case', 'School Planner'];
@@ -86,19 +71,10 @@
       
       const [timetable, setTimetable] = useState(() => {
         try {
-          const saved = localStorage.getItem('schoolbag_timetable_v2');
+          const saved = localStorage.getItem('schoolbag_timetable_v3');
           return saved ? JSON.parse(saved) : { 'Week 1': BASE_TIMETABLE, 'Week 2': BASE_TIMETABLE };
         } catch(e) {
           return { 'Week 1': BASE_TIMETABLE, 'Week 2': BASE_TIMETABLE };
-        }
-      });
-
-      const [equipmentRules, setEquipmentRules] = useState(() => {
-        try {
-          const saved = localStorage.getItem('schoolbag_rules');
-          return saved ? JSON.parse(saved) : DEFAULT_EQUIPMENT_RULES;
-        } catch(e) {
-          return DEFAULT_EQUIPMENT_RULES;
         }
       });
 
@@ -113,18 +89,18 @@
 
       const [checkedItems, setCheckedItems] = useState({});
       const [newEssential, setNewEssential] = useState('');
+      
+      // Add Class Form State
       const [showAddClass, setShowAddClass] = useState(false);
       const [newClassName, setNewClassName] = useState('');
       const [newClassRoom, setNewClassRoom] = useState('');
       const [newClassTeacher, setNewClassTeacher] = useState('');
+      const [newClassItemInput, setNewClassItemInput] = useState('');
+      const [newClassItems, setNewClassItems] = useState([]);
 
       useEffect(() => {
-        localStorage.setItem('schoolbag_timetable_v2', JSON.stringify(timetable));
+        localStorage.setItem('schoolbag_timetable_v3', JSON.stringify(timetable));
       }, [timetable]);
-
-      useEffect(() => {
-        localStorage.setItem('schoolbag_rules', JSON.stringify(equipmentRules));
-      }, [equipmentRules]);
 
       useEffect(() => {
         localStorage.setItem('schoolbag_essentials', JSON.stringify(essentials));
@@ -134,7 +110,7 @@
         const classes = (timetable && timetable[week] && timetable[week][day]) ? timetable[week][day] : [];
         const itemsSet = new Set([...essentials]);
         classes.forEach(cls => {
-          const gear = equipmentRules[cls.name] || [];
+          const gear = cls.items || [];
           gear.forEach(item => itemsSet.add(item));
         });
         return Array.from(itemsSet);
@@ -149,6 +125,16 @@
         setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }));
       };
 
+      const handleAddClassItem = () => {
+        if (!newClassItemInput.trim()) return;
+        setNewClassItems([...newClassItems, newClassItemInput.trim()]);
+        setNewClassItemInput('');
+      };
+
+      const handleRemoveClassItem = (itemToRemove) => {
+        setNewClassItems(newClassItems.filter(i => i !== itemToRemove));
+      };
+
       const handleAddClass = (e) => {
         e.preventDefault();
         if (!newClassName.trim()) return;
@@ -156,7 +142,8 @@
           id: Date.now().toString(),
           name: newClassName.trim(),
           room: newClassRoom.trim() || 'Room 101',
-          teacher: newClassTeacher.trim() || 'Staff'
+          teacher: newClassTeacher.trim() || 'Staff',
+          items: newClassItems
         };
         setTimetable(prev => ({
           ...prev,
@@ -168,6 +155,8 @@
         setNewClassName('');
         setNewClassRoom('');
         setNewClassTeacher('');
+        setNewClassItems([]);
+        setNewClassItemInput('');
         setShowAddClass(false);
       };
 
@@ -298,34 +287,67 @@
                       <span>Add Class</span>
                     </button>
                   </div>
+                  
                   {showAddClass && (
-                    <form onSubmit={handleAddClass} className="bg-indigo-50/80 border border-indigo-200 p-4 rounded-2xl space-y-3 shadow-md">
+                    <form onSubmit={handleAddClass} className="bg-indigo-50/90 border border-indigo-200 p-4 rounded-2xl space-y-3 shadow-md">
                       <h4 className="font-bold text-indigo-900 text-sm">Add Class to {selectedWeek} {selectedDay}</h4>
-                      <input type="text" placeholder="Subject Name" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} className="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-600" required />
+                      <input type="text" placeholder="Subject Name (e.g. Mathematics)" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} className="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-600" required />
                       <div className="flex space-x-2">
                         <input type="text" placeholder="Room" value={newClassRoom} onChange={(e) => setNewClassRoom(e.target.value)} className="w-1/2 bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none" />
                         <input type="text" placeholder="Teacher" value={newClassTeacher} onChange={(e) => setNewClassTeacher(e.target.value)} className="w-1/2 bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none" />
                       </div>
-                      <div className="flex justify-end space-x-2 pt-1">
+                      
+                      {/* Required Items for this class */}
+                      <div className="pt-1">
+                        <label className="block text-xs font-bold text-indigo-900 mb-1">Required Items / Books for this Class:</label>
+                        <div className="flex space-x-2 mb-2">
+                          <input type="text" placeholder="e.g. Calculator, Textbook" value={newClassItemInput} onChange={(e) => setNewClassItemInput(e.target.value)} className="flex-1 bg-white border border-indigo-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none" />
+                          <button type="button" onClick={handleAddClassItem} className="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm">Add Item</button>
+                        </div>
+                        {newClassItems.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 bg-white p-2 rounded-xl border border-indigo-100">
+                            {newClassItems.map((itm, idx) => (
+                              <span key={idx} className="inline-flex items-center bg-indigo-100 text-indigo-800 text-[11px] font-semibold px-2.5 py-1 rounded-lg">
+                                {itm}
+                                <button type="button" onClick={() => handleRemoveClassItem(itm)} className="ml-1.5 text-indigo-500 hover:text-rose-600 font-bold">×</button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end space-x-2 pt-2">
                         <button type="button" onClick={() => setShowAddClass(false)} className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200">Cancel</button>
                         <button type="submit" className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 shadow-md">Save Class</button>
                       </div>
                     </form>
                   )}
+
                   <div className="space-y-3">
                     {(!timetable?.[selectedWeek]?.[selectedDay] || timetable[selectedWeek][selectedDay].length === 0) ? (
                       <p className="text-center text-slate-400 py-8 text-sm">No classes added for {selectedWeek} {selectedDay} yet.</p>
                     ) : (
                       timetable[selectedWeek][selectedDay].map((cls, idx) => (
-                        <div key={cls.id || idx} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex justify-between items-center shadow-sm">
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">{idx + 1}</span>
-                              <h4 className="font-bold text-slate-800">{cls.name}</h4>
+                        <div key={cls.id || idx} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl shadow-sm space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">{idx + 1}</span>
+                                <h4 className="font-bold text-slate-800">{cls.name}</h4>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-1 ml-8">{cls.room} • {cls.teacher}</p>
                             </div>
-                            <p className="text-xs text-slate-500 mt-1 ml-8">{cls.room} • {cls.teacher}</p>
+                            <button onClick={() => deleteClass(cls.id)} className="text-slate-400 hover:text-rose-600 p-1"><Trash className="w-4 h-4" /></button>
                           </div>
-                          <button onClick={() => deleteClass(cls.id)} className="text-slate-400 hover:text-rose-600 p-2"><Trash className="w-4 h-4" /></button>
+                          {cls.items && cls.items.length > 0 && (
+                            <div className="ml-8 flex flex-wrap gap-1 pt-1">
+                              {cls.items.map((item, iIdx) => (
+                                <span key={iIdx} className="text-[10px] bg-slate-200 text-slate-700 font-medium px-2 py-0.5 rounded-md">
+                                  🎒 {item}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))
                     )}

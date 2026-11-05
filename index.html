@@ -1,3 +1,15 @@
+None selected 
+
+Skip to content
+Using Gmail with screen readers
+1 of 531
+V2
+Inbox
+
+Tony Meade <meadie1986@googlemail.com>
+17:30 (0 minutes ago)
+to me
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,4 +61,289 @@
         { id: '12', name: 'Music', room: 'Music Hall', teacher: 'Mr. Green' }
       ],
       Thursday: [
-        { id: '13', name: 'Mathematics', room: 'Room 102', teacher
+        { id: '13', name: 'Mathematics', room: 'Room 102', teacher: 'Mr. Davis' },
+        { id: '14', name: 'French', room: 'Room 301', teacher: 'Madame Dubois' },
+        { id: '15', name: 'Physical Education', room: 'Gym', teacher: 'Coach Taylor' },
+        { id: '16', name: 'History', room: 'Room 110', teacher: 'Ms. Clark' }
+      ],
+      Friday: [
+        { id: '17', name: 'English Literature', room: 'Room 204', teacher: 'Mrs. Smith' },
+        { id: '18', name: 'Science', room: 'Lab 3', teacher: 'Dr. Evans' },
+        { id: '19', name: 'Design & Tech', room: 'Workshop', teacher: 'Mr. Wright' },
+        { id: '20', name: 'Drama', room: 'Studio', teacher: 'Ms. Lee' }
+      ]
+    };
+
+    const DEFAULT_EQUIPMENT_RULES = {
+      'Mathematics': ['Calculator', 'Geometry Set', 'Math Exercise Book'],
+      'English Literature': ['English Anthology', 'Reading Book'],
+      'Science': ['Science Lab Goggles', 'Scientific Calculator'],
+      'Physical Education': ['PE Kit', 'Trainers', 'Water Bottle'],
+      'Art': ['Sketchbook', 'Paint Apron'],
+      'Computer Science': ['Headphones'],
+      'Music': ['Sheet Music Folder'],
+      'French': ['French Vocabulary Booklet'],
+      'History': ['History Source Booklet'],
+      'Geography': ['Atlas & Colored Pencils'],
+      'Design & Tech': ['Safety Glasses'],
+      'Drama': ['Comfortable Clothes']
+    };
+
+    const DEFAULT_ESSENTIALS = ['Water Bottle', 'Lunchbox', 'Pencil Case', 'School Planner'];
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('pack');
+      const [selectedDay, setSelectedDay] = useState('Monday');
+      
+      const [timetable, setTimetable] = useState(() => {
+        const saved = localStorage.getItem('schoolbag_timetable');
+        return saved ? JSON.parse(saved) : DEFAULT_TIMETABLE;
+      });
+
+      const [equipmentRules, setEquipmentRules] = useState(() => {
+        const saved = localStorage.getItem('schoolbag_rules');
+        return saved ? JSON.parse(saved) : DEFAULT_EQUIPMENT_RULES;
+      });
+
+      const [essentials, setEssentials] = useState(() => {
+        const saved = localStorage.getItem('schoolbag_essentials');
+        return saved ? JSON.parse(saved) : DEFAULT_ESSENTIALS;
+      });
+
+      const [checkedItems, setCheckedItems] = useState({});
+      const [newEssential, setNewEssential] = useState('');
+      const [showAddClass, setShowAddClass] = useState(false);
+      const [newClassName, setNewClassName] = useState('');
+      const [newClassRoom, setNewClassRoom] = useState('');
+      const [newClassTeacher, setNewClassTeacher] = useState('');
+
+      useEffect(() => {
+        localStorage.setItem('schoolbag_timetable', JSON.stringify(timetable));
+      }, [timetable]);
+
+      useEffect(() => {
+        localStorage.setItem('schoolbag_rules', JSON.stringify(equipmentRules));
+      }, [equipmentRules]);
+
+      useEffect(() => {
+        localStorage.setItem('schoolbag_essentials', JSON.stringify(essentials));
+      }, [essentials]);
+
+      const getRequiredItemsForDay = (day) => {
+        const classes = timetable[day] || [];
+        const itemsSet = new Set([...essentials]);
+        classes.forEach(cls => {
+          const gear = equipmentRules[cls.name] || [];
+          gear.forEach(item => itemsSet.add(item));
+        });
+        return Array.from(itemsSet);
+      };
+
+      const currentDayItems = getRequiredItemsForDay(selectedDay);
+      const packedCount = currentDayItems.filter(item => checkedItems[`${selectedDay}-${item}`]).length;
+      const allPacked = currentDayItems.length > 0 && packedCount === currentDayItems.length;
+
+      const toggleItem = (item) => {
+        const key = `${selectedDay}-${item}`;
+        setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }));
+      };
+
+      const handleAddClass = (e) => {
+        e.preventDefault();
+        if (!newClassName.trim()) return;
+        const newClassObj = {
+          id: Date.now().toString(),
+          name: newClassName.trim(),
+          room: newClassRoom.trim() || 'Room 101',
+          teacher: newClassTeacher.trim() || 'Staff'
+        };
+        setTimetable(prev => ({
+          ...prev,
+          [selectedDay]: [...(prev[selectedDay] || []), newClassObj]
+        }));
+        setNewClassName('');
+        setNewClassRoom('');
+        setNewClassTeacher('');
+        setShowAddClass(false);
+      };
+
+      const deleteClass = (id) => {
+        setTimetable(prev => ({
+          ...prev,
+          [selectedDay]: prev[selectedDay].filter(c => c.id !== id)
+        }));
+      };
+
+      const addEssentialItem = (e) => {
+        e.preventDefault();
+        if (!newEssential.trim() || essentials.includes(newEssential.trim())) return;
+        setEssentials([...essentials, newEssential.trim()]);
+        setNewEssential('');
+      };
+
+      const removeEssentialItem = (item) => {
+        setEssentials(essentials.filter(i => i !== item));
+      };
+
+      return (
+        <div className="min-h-screen bg-slate-100 flex justify-center items-start p-0 sm:p-6 font-sans">
+          <div className="w-full max-w-md bg-white min-h-screen sm:min-h-[850px] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+            <header className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-6 pb-5 shadow-md">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <span className="text-xs uppercase tracking-wider bg-indigo-500/50 px-2.5 py-1 rounded-full font-semibold">Ready for School</span>
+                  <h1 className="text-2xl font-black mt-1">SchoolBag Buddy</h1>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                  <Sparkles className="w-6 h-6 text-yellow-300 animate-pulse" />
+                </div>
+              </div>
+              <div className="flex space-x-1 bg-black/20 p-1 rounded-xl">
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
+                  <button
+                    key={day}
+                    onClick={() => setSelectedDay(day)}
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                      selectedDay === day ? 'bg-white text-indigo-700 shadow-md scale-105' : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    {day.slice(0, 3)}
+                  </button>
+                ))}
+              </div>
+            </header>
+
+            <main className="flex-1 overflow-y-auto p-5 pb-24">
+              {activeTab === 'pack' && (
+                <div className="space-y-6">
+                  {allPacked && (
+                    <div className="bg-emerald-500 text-white p-4 rounded-2xl shadow-lg flex items-center space-x-3">
+                      <div className="text-3xl">🎉</div>
+                      <div>
+                        <h3 className="font-bold text-base">Bag is 100% Packed!</h3>
+                        <p className="text-xs text-emerald-100">You are fully ready for {selectedDay}!</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <div className="flex justify-between text-sm font-semibold mb-2">
+                      <span className="text-slate-700">Packing Progress ({selectedDay})</span>
+                      <span className="text-indigo-600">{packedCount} / {currentDayItems.length} items</span>
+                    </div>
+                    <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+                      <div className="bg-indigo-600 h-full transition-all duration-500 rounded-full" style={{ width: `${currentDayItems.length ? (packedCount / currentDayItems.length) * 100 : 0}%` }}></div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Items to Pack</h3>
+                    <div className="space-y-2.5">
+                      {currentDayItems.map(item => {
+                        const isChecked = !!checkedItems[`${selectedDay}-${item}`];
+                        return (
+                          <div
+                            key={item}
+                            onClick={() => toggleItem(item)}
+                            className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${
+                              isChecked ? 'bg-emerald-50/70 border-emerald-300 text-emerald-900' : 'bg-white border-slate-200 hover:border-indigo-300 text-slate-800 shadow-sm'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${isChecked ? 'bg-emerald-500 text-white' : 'border-2 border-slate-300'}`}>
+                                {isChecked && <CheckSquare className="w-4 h-4" />}
+                              </div>
+                              <span className={`font-semibold text-sm ${isChecked ? 'line-through text-emerald-700' : ''}`}>{item}</span>
+                            </div>
+                            <span className="text-xs px-2.5 py-1 bg-slate-100 rounded-full font-medium text-slate-500">{essentials.includes(item) ? 'Daily' : 'Subject Gear'}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'timetable' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{selectedDay} Schedule</h3>
+                    <button onClick={() => setShowAddClass(true)} className="flex items-center space-x-1 bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-md hover:bg-indigo-700 transition">
+                      <Plus className="w-4 h-4" />
+                      <span>Add Class</span>
+                    </button>
+                  </div>
+                  {showAddClass && (
+                    <form onSubmit={handleAddClass} className="bg-indigo-50/80 border border-indigo-200 p-4 rounded-2xl space-y-3 shadow-md">
+                      <h4 className="font-bold text-indigo-900 text-sm">Add New Class</h4>
+                      <input type="text" placeholder="Subject Name" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} className="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-600" required />
+                      <div className="flex space-x-2">
+                        <input type="text" placeholder="Room" value={newClassRoom} onChange={(e) => setNewClassRoom(e.target.value)} className="w-1/2 bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+                        <input type="text" placeholder="Teacher" value={newClassTeacher} onChange={(e) => setNewClassTeacher(e.target.value)} className="w-1/2 bg-white border border-indigo-200 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+                      </div>
+                      <div className="flex justify-end space-x-2 pt-1">
+                        <button type="button" onClick={() => setShowAddClass(false)} className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200">Cancel</button>
+                        <button type="submit" className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 shadow-md">Save Class</button>
+                      </div>
+                    </form>
+                  )}
+                  <div className="space-y-3">
+                    {timetable[selectedDay]?.length === 0 ? (
+                      <p className="text-center text-slate-400 py-8 text-sm">No classes added for {selectedDay} yet.</p>
+                    ) : (
+                      timetable[selectedDay]?.map((cls, idx) => (
+                        <div key={cls.id || idx} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex justify-between items-center shadow-sm">
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">{idx + 1}</span>
+                              <h4 className="font-bold text-slate-800">{cls.name}</h4>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1 ml-8">{cls.room} • {cls.teacher}</p>
+                          </div>
+                          <button onClick={() => deleteClass(cls.id)} className="text-slate-400 hover:text-rose-600 p-2"><Trash className="w-4 h-4" /></button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'settings' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Always Pack Daily Essentials</h3>
+                    <form onSubmit={addEssentialItem} className="flex space-x-2 mb-3">
+                      <input type="text" placeholder="Add item..." value={newEssential} onChange={(e) => setNewEssential(e.target.value)} className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+                      <button type="submit" className="bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md">Add</button>
+                    </form>
+                    <div className="space-y-2">
+                      {essentials.map(item => (
+                        <div key={item} className="flex justify-between items-center bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl">
+                          <span className="text-sm font-semibold text-slate-700">{item}</span>
+                          <button onClick={() => removeEssentialItem(item)} className="text-slate-400 hover:text-rose-600"><Trash className="w-4 h-4" /></button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
+
+            <nav className="bg-white border-t border-slate-200 px-6 py-3 flex justify-around items-center absolute bottom-0 w-full max-w-md shadow-lg">
+              <button onClick={() => setActiveTab('pack')} className={`flex flex-col items-center space-y-1 transition ${activeTab === 'pack' ? 'text-indigo-600' : 'text-slate-400'}`}>
+                <CheckSquare className="w-6 h-6" /><span className="text-[10px] font-bold">Pack Bag</span>
+              </button>
+              <button onClick={() => setActiveTab('timetable')} className={`flex flex-col items-center space-y-1 transition ${activeTab === 'timetable' ? 'text-indigo-600' : 'text-slate-400'}`}>
+                <CalendarIcon className="w-6 h-6" /><span className="text-[10px] font-bold">Timetable</span>
+              </button>
+              <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center space-y-1 transition ${activeTab === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`}>
+                <SettingsIcon className="w-6 h-6" /><span className="text-[10px] font-bold">Essentials</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
